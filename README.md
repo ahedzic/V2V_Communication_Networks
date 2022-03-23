@@ -6,7 +6,7 @@ Start OMNet++ IDE from mingwenv console, found in your omnetpp root directory, a
 	omnetpp
 	
 Make sure to download Veins, then import it in the OMNet++ IDE by right-clicking in Project Explorer->Import->Existing projects into workspace->Veins folder.
-Download and do the same with this V2VSimulation project. Then download and install SUMO. 
+Download and do the same with this V2VSimulation project, then right-click and select Build Project. Then download and install SUMO. 
 
 To run, first start SUMO by typing command in the mingwenv console
 
