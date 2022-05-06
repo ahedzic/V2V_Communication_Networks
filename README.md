@@ -1,4 +1,4 @@
-# V2V_Communication_Networks
+# Installation and running
 
 Following the installation guide at https://www.youtube.com/watch?v=PfAWhrmoYgM, install OMNeT++ IDE, then install inet from the options. 
 Start OMNeT++ IDE from mingwenv console, found in your omnetpp root directory, and type 
@@ -16,6 +16,8 @@ Then run the simulator from the IDE by right-clicking on V2VSimulation->Run As->
 To run it on the custom map, go to V2VSimulation/simulations/veins_inet/omnetpp.ini, right-click on the .ini file->Run As->OMNeT++ Simulation.
 
 My versions:  OMNeT++ 5.6.2, Veins 5.2, SUMO 1.8.0, INET (installed by OMNet++ IDE).
+
+# Custom road network and routes
 
 To build a network from a custom map exported from OpenStreetMaps, manually select an area on OpenStreetMaps and export to an .osm file and save it in data/ folder. 
 Then in a console, cd to Sumo root folder where it was installed, and execute the command
@@ -52,4 +54,11 @@ Generate the vehicle route file using the command
 	python tools/randomTrips.py --net-file data/asutempe.net.xml --output-trip-file data/asuvehicle.trips.xml --route-file data/asuvehicle.rou.xml --length --end 100 
 	
 You will import the .net.xml, .rou.xml, .poly.xml, and .trips.xml files into your OMNeT++ simulation project folder, and update map.sumo.cfg and square.launchd.xml. 
-Then you can run simulations on the custom map as before.
+Then you can run simulations on the custom map as in the previous section.
+
+# Output 
+
+To get a dump of the state of the network at every time step, i.e. which vehicle is on which edge (street) with pos and speed, cd into the bin/ folder where sumo.exe is, and execute 
+
+	sumo.exe -c ../data/asutempe.sumocfg --netstate-dump ../data/netstate_dump.xml
+	
