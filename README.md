@@ -62,3 +62,15 @@ To get a dump of the state of the network at every time step, i.e. which vehicle
 
 	sumo.exe -c ../data/asutempe.sumocfg --netstate-dump ../data/netstate_dump.xml
 	
+To create adjacency matrix between vehicle nodes from a simulation run, cd into the same directory as netstate_dump.xml, and run 
+
+	python adjacency.py
+	
+which generates my_data.npz. Load the numpy array via 
+
+	my_data = np.load("my_data.npz")
+	adj = my_data["adj"]
+	
+The numpy array adj has 3 dimensions, the first dimension indexes the timestep, and there are 681 timesteps in seconds. 
+Each timestep contains an adjacency array of size 99 x 99, for 99 vehicles. 
+The adjacency array simply captures adjacency between V2V, and not any other node type. 
