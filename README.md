@@ -16,3 +16,40 @@ Then run the simulator from the IDE by right-clicking on V2VSimulation->Run As->
 To run it on the custom map, go to V2VSimulation/simulations/veins_inet/omnetpp.ini, right-click on the .ini file->Run As->OMNeT++ Simulation.
 
 My versions:  OMNeT++ 5.6.2, Veins 5.2, SUMO 1.8.0, INET (installed by OMNet++ IDE).
+
+To build a network from a custom map exported from OpenStreetMaps, manually select an area on OpenStreetMaps and export to an .osm file and save it in data/ folder. 
+Then in a console, cd to Sumo root folder where it was installed, and execute the command
+
+	bin/netconvert.exe --osm-files data/asutempe.osm -o data/asutempe.net.xml --type-files "data/typemap/osmNetconvert.typ.xml, data/typemap/osmNetconvertPedestrians.typ.xml, data/typemap/osmNetconvertBicycle.typ.xml" --geometry.remove --tls.join --junctions.join --ramps.guess
+	
+This imports sidewalks for pedestrians and bicycle lanes on top of default motorway settings. The .net.xml file contains the road network. 
+Next, make sure you have typemap.xml in the data/ folder, execute the command 
+
+	bin/polyconvert.exe --net-file data/asutempe.net.xml --osm-files data/asutempe.osm --type-file data/typemap.xml -o data/asutempe.poly.xml
+	
+This imports polygons from the .osm file such as buildings, rivers, and railways and generates the .poly.xml file. 
+Finally, you will edit the .sumocfg file by adding the generated .net.xml file and .poly.xml file. The body of the .sumocfg file looks like this
+
+	<configuration>
+		<input>
+			<net-file value="asutempe.net.xml"/>
+			<route-files value="asuvehicle.rou.xml"/>
+			<additional-files value="asutempe.poly.xml"/>
+		</input>
+	
+		<time>
+			<begin value="0"/>
+			<end value="2000"/>
+		</time>
+	</configuration>
+	
+<!-- The route file, asupedestrian.rou.xml, generates a list of pedestrian trips. This is generated using the command
+
+	python tools/randomTrips.py --net-file data/asutempe.net.xml --output-trip-file data/asupedestrian.trips.xml --route-file data/asupedestrian.rou.xml --pedestrians --length --end 20
+	 -->
+Generate the vehicle route file using the command 
+
+	python tools/randomTrips.py --net-file data/asutempe.net.xml --output-trip-file data/asuvehicle.trips.xml --route-file data/asuvehicle.rou.xml --length --end 100 
+	
+You will import the .net.xml, .rou.xml, .poly.xml, and .trips.xml files into your OMNeT++ simulation project folder, and update map.sumo.cfg and square.launchd.xml. 
+Then you can run simulations on the custom map as before.
