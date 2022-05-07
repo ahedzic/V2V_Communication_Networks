@@ -2,12 +2,16 @@
 # OMNeT++/OMNEST Makefile for V2VSimulation
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -KINET_PROJ=../../inet -KVEINS_PROJ=C:/Users/alchu/veins-veins-5.2 -DINET_IMPORT -DVEINS_IMPORT -I$$\(INET_PROJ\)/src -I$$\(VEINS_PROJ\)/src -I. -L$$\(INET_PROJ\)/src -L$$\(VEINS_PROJ\)/src -lINET$$\(D\) -lveins$$\(D\)
+#  opp_makemake -f --deep
 #
 
 # Name of target to be created (-o option)
-TARGET = V2VSimulation$(D)$(EXE_SUFFIX)
 TARGET_DIR = .
+TARGET_NAME = V2VSimulation$(D)
+TARGET = $(TARGET_NAME)$(EXE_SUFFIX)
+TARGET_IMPLIB = $(TARGET_NAME)$(IMPLIB_SUFFIX)
+TARGET_IMPDEF = $(TARGET_NAME)$(IMPDEF_SUFFIX)
+TARGET_FILES = $(TARGET_DIR)/$(TARGET)
 
 # User interface (uncomment one) (-u option)
 USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(QTENV_LIBS) $(CMDENV_LIBS)
@@ -16,13 +20,13 @@ USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(QTENV_LIBS) $(CMDENV_LI
 #USERIF_LIBS = $(QTENV_LIBS)
 
 # C++ include paths (with -I)
-INCLUDE_PATH = -I$(INET_PROJ)/src -I$(VEINS_PROJ)/src -I.
+INCLUDE_PATH =
 
 # Additional object and library files to link with
 EXTRA_OBJS =
 
 # Additional libraries (-L, -l options)
-LIBS = $(LDFLAG_LIBPATH)$(INET_PROJ)/src $(LDFLAG_LIBPATH)$(VEINS_PROJ)/src  -lINET$(D) -lveins$(D)
+LIBS =
 
 # Output directory
 PROJECT_OUTPUT_DIR = ../out
@@ -30,25 +34,13 @@ PROJECTRELATIVE_PATH = src
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = \
-    $O/veins_inet/VeinsInetApplicationBase.o \
-    $O/veins_inet/VeinsInetManager.o \
-    $O/veins_inet/VeinsInetManagerBase.o \
-    $O/veins_inet/VeinsInetManagerForker.o \
-    $O/veins_inet/VeinsInetMobility.o \
-    $O/veins_inet/VeinsInetSampleApplication.o \
-    $O/veins_inet/VeinsInetSampleMessage_m.o
+OBJS =
 
 # Message files
-MSGFILES = \
-    veins_inet/VeinsInetSampleMessage.msg
+MSGFILES =
 
 # SM files
 SMFILES =
-
-# Other makefile variables (-K)
-INET_PROJ=../../inet
-VEINS_PROJ=C:/Users/alchu/veins-veins-5.2
 
 #------------------------------------------------------------------------------
 
@@ -57,11 +49,7 @@ VEINS_PROJ=C:/Users/alchu/veins-veins-5.2
 ifneq ("$(OMNETPP_CONFIGFILE)","")
 CONFIGFILE = $(OMNETPP_CONFIGFILE)
 else
-ifneq ("$(OMNETPP_ROOT)","")
-CONFIGFILE = $(OMNETPP_ROOT)/Makefile.inc
-else
 CONFIGFILE = $(shell opp_configfilepath)
-endif
 endif
 
 ifeq ("$(wildcard $(CONFIGFILE))","")
@@ -72,54 +60,34 @@ include $(CONFIGFILE)
 
 # Simulation kernel and user interface libraries
 OMNETPP_LIBS = $(OPPMAIN_LIB) $(USERIF_LIBS) $(KERNEL_LIBS) $(SYS_LIBS)
-ifneq ($(TOOLCHAIN_NAME),clangc2)
-LIBS += -Wl,-rpath,$(abspath $(INET_PROJ)/src) -Wl,-rpath,$(abspath $(VEINS_PROJ)/src)
-endif
 
-COPTS = $(CFLAGS) $(IMPORT_DEFINES) -DINET_IMPORT -DVEINS_IMPORT $(INCLUDE_PATH) -I$(OMNETPP_INCL_DIR)
+COPTS = $(CFLAGS) $(IMPORT_DEFINES)  $(INCLUDE_PATH) -I$(OMNETPP_INCL_DIR)
 MSGCOPTS = $(INCLUDE_PATH)
 SMCOPTS =
 
 # we want to recompile everything if COPTS changes,
-# so we store COPTS into $COPTS_FILE and have object
-# files depend on it (except when "make depend" was called)
+# so we store COPTS into $COPTS_FILE (if COPTS has changed since last build)
+# and make the object files depend on it
 COPTS_FILE = $O/.last-copts
 ifneq ("$(COPTS)","$(shell cat $(COPTS_FILE) 2>/dev/null || echo '')")
-$(shell $(MKPATH) "$O" && echo "$(COPTS)" >$(COPTS_FILE))
+  $(shell $(MKPATH) "$O")
+  $(file >$(COPTS_FILE),$(COPTS))
 endif
 
 #------------------------------------------------------------------------------
 # User-supplied makefile fragment(s)
-# >>>
-# inserted from file 'makefrag':
-#
-# Use the new message compiler introduced in OMNeT++ 5.3
-#
-MSGC:=$(MSGC) --msg6
+-include makefrag
 
-ifeq ($(PLATFORM),win32.x86_64)
-  #
-  # on windows we have to link with the ws2_32 (winsock2) library as it is no longer added
-  # to the omnetpp system libraries by default (as of OMNeT++ 5.1)
-  #
-  LIBS += -lws2_32
-  DEFINES += -DINET_EXPORT
-  ENABLE_AUTO_IMPORT=-Wl,--enable-auto-import
-  LDFLAGS := $(filter-out $(ENABLE_AUTO_IMPORT), $(LDFLAGS))
-
-endif
-
-# <<<
 #------------------------------------------------------------------------------
 
 # Main target
-all: $(TARGET_DIR)/$(TARGET)
+all: $(TARGET_FILES)
 
 $(TARGET_DIR)/% :: $O/%
 	@mkdir -p $(TARGET_DIR)
 	$(Q)$(LN) $< $@
-ifeq ($(TOOLCHAIN_NAME),clangc2)
-	$(Q)-$(LN) $(<:%.dll=%.lib) $(@:%.dll=%.lib)
+ifeq ($(TOOLCHAIN_NAME),clang-msabi)
+	-$(Q)-$(LN) $(<:%.dll=%.lib) $(@:%.dll=%.lib) 2>/dev/null
 endif
 
 $O/$(TARGET): $(OBJS)  $(wildcard $(EXTRA_OBJS)) Makefile $(CONFIGFILE)
@@ -151,14 +119,18 @@ smheaders: $(SMFILES:.sm=_sm.h)
 clean:
 	$(qecho) Cleaning $(TARGET)
 	$(Q)-rm -rf $O
-	$(Q)-rm -f $(TARGET_DIR)/$(TARGET)
-	$(Q)-rm -f $(TARGET_DIR)/$(TARGET:%.dll=%.lib)
+	$(Q)-rm -f $(TARGET_FILES)
 	$(Q)-rm -f $(call opp_rwildcard, . , *_m.cc *_m.h *_sm.cc *_sm.h)
 
 cleanall:
-	$(Q)$(MAKE) -s clean MODE=release
-	$(Q)$(MAKE) -s clean MODE=debug
+	$(Q)$(CLEANALL_COMMAND)
 	$(Q)-rm -rf $(PROJECT_OUTPUT_DIR)
+
+help:
+	@echo "$$HELP_SYNOPSYS"
+	@echo "$$HELP_TARGETS"
+	@echo "$$HELP_VARIABLES"
+	@echo "$$HELP_EXAMPLES"
 
 # include all dependencies
 -include $(OBJS:%=%.d) $(MSGFILES:%.msg=$O/%_m.h.d)

@@ -1,0 +1,1 @@
+-O3 -DNDEBUG=1   -MMD -MP -MF .d    -isystem /mingw64/include -isystem /opt/mingw64/include -Wno-deprecated-register -Wno-unused-function -fno-omit-frame-pointer -DXMLPARSER=libxml -DPREFER_QTENV -DWITH_QTENV -DWITH_PARSIM -DWITH_NETBUILDER -DWITH_OSG -DWITH_OSGEARTH -DOMNETPPLIBS_IMPORT   -I/c/CSE575/omnetpp-5.7-windows-x86_64/omnetpp-5.7/include
